@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # La base de données
+  db:
+    image: postgres:15-alpine
+    container_name: postgres-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: yugabyte
+      POSTGRES_PASSWORD: yugabyte
+      POSTGRES_DB: school_project
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Microservice Professeurs
+  ms-professeurs:
+    build: ./ms-professeurs
+    container_name: ms-professeurs
+    env_file:
+      - ./ms-professeurs/.env  # Docker va lire le fichier .env ici
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_HOST: db
+    depends_on:
+      - db
+
+  # Microservice Matières
+  ms-matieres:
+    build: ./ms-matieres
+    container_name: ms-matieres
+    env_file:
+      - ./ms-matieres/.env  # Docker va lire le fichier .env ici
+    ports:
+      - "3001:3001"
+    environment:
+      DATABASE_HOST: db
+    depends_on:
+      - db
+
+  # Microservice Attributions
+  ms-attributions:
+    build: ./ms-attributions
+    container_name: ms-attributions
+    env_file:
+      - ./ms-attributions/.env
+    ports:
+      - "3002:3002"
+    environment:
+      DATABASE_HOST: db
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
